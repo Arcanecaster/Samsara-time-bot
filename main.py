@@ -32,7 +32,7 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 # Version number
-Current_version = "3.2.1"
+Current_version = "3.3.0"
 
 
 # Private
@@ -85,20 +85,19 @@ async def ping(ctx):
 
 
 # Time command
-@bot.bridge_command(aliases=['timer', 'times', 'servertime', 'servtime', 'stime'])
+@bot.bridge_command(aliases=['timer', 'times', 'servertime', 'servtime', 'stime'], description="Replies with the current server timeReplies with the current server time")
 async def time(ctx):
-    if ctx.message.reference is None:
         current_time = datetime.datetime.utcnow().strftime("%H:%M")
         current_date = datetime.datetime.utcnow().strftime("%Y-%m-%d")
-        await ctx.reply("Hi! Server Time Is " + current_date + ", " + current_time, mention_author=False)
+        await ctx.reply("Hi! Server Time Is " + current_date + ", " + current_time)
         return
-    if ctx.message.reference is not None:
+   # if ctx.message.reference is not None:
         # Gets reply id, which is a datetime object and turns it into a readable format.
-        reply = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-        reply_time = reply.created_at.strftime("%H:%M")
-        reply_date = reply.created_at.strftime("%Y-%m-%d")
-        await reply.reply("That message was sent " + reply_date + ", " + reply_time + " Server Time",
-                          mention_author=False)
+       # reply = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+        #reply_time = reply.created_at.strftime("%H:%M")
+       # reply_date = reply.created_at.strftime("%Y-%m-%d")
+        #await reply.reply("That message was sent " + reply_date + ", " + reply_time + " Server Time",
+                   #       mention_author=False)
 
 
 # Yes its messy, no I wont fix it.
@@ -150,8 +149,7 @@ async def helps(ctx):
                                                                          "quite simple and I was coded in only 4 "
                                                                          "hours, so please dont try to break me.")
     embedvar.add_field(name=";help", value="You're already here!")
-    embedvar.add_field(name=";time", value="Displays The Server Time, or if you reply to a message displays the time "
-                                           "when that message was sent.")
+    embedvar.add_field(name=";time", value="Replies with the current server time")
     embedvar.add_field(name=";credits", value="Displays the creator of this project")
     embedvar.add_field(name=";changelog", value="Displays the changelog, current version is " + str(Current_version))
     embedvar.add_field(name=";gettime", value="Returns the argument as servertime, fx ´;gettime in 5 hours`")
@@ -174,7 +172,7 @@ async def changelog(ctx):
                                            " spamming logs")
     embedvar.add_field(name="3.0.0", value="Added timeof and gettimestamp, context menus and moved to py-cord")
     embedvar.add_field(name="3.1.0", value="Added ;fullmoon and re added serverside logging")
-
+    embedvar.add_field(name="3.3.0", value="Added support for slash commands")
     await ctx.reply(embed=embedvar)
 
 
@@ -190,12 +188,12 @@ async def credit(ctx):
 
 
 # Emergency logout command, only available for me.
-@bot.bridge_command(description="Emergency tool to log out the bot, only usuable by Arcane")
+@bot.bridge_command(description="Emergency tool to log out the bot, only useable by Arcane")
 async def logout(ctx):
-    if ctx.message.author.id == 405057667422486528:
+    if ctx.author.id == 405057667422486528:
         await ctx.reply("you got it boss")
         await bot.close()
-    elif ctx.message.author.id == 307190869134540800:
+    elif ctx.author.id == 307190869134540800:
         await ctx.reply("Lol still no, love you :heart:")
     else:
         await ctx.reply("lol no ")
