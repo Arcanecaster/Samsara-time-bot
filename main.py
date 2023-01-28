@@ -75,8 +75,6 @@ async def on_ready():
     await bot.wait_until_ready()
     activate.start()
     scheduler.start()
-    print(str(annouce_id))
-    await annoucement_func()
 
 
 @bot.bridge_command(description="Sends the bot's latency.")
