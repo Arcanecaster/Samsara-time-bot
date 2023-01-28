@@ -75,6 +75,8 @@ async def on_ready():
     await bot.wait_until_ready()
     activate.start()
     scheduler.start()
+    print(str(annouce_id))
+    await annoucement_func()
 
 
 @bot.bridge_command(description="Sends the bot's latency.")
@@ -117,12 +119,11 @@ async def fullmoon(ctx):
 
 
 @bot.bridge_command(aliases=['when', 'tstamp'],description="Replies with a timestamp of the time")
-async def timeof(ctx, *args):
-    if args == ():
+async def timeof(ctx, *, time = None):
+    if time == None:
         await ctx.reply('You have to provide an argument, for example. "12 pm", or "In 4 hours"')
         return
-    arguments = ' '.join(args)
-    print(args)
+    arguments = time
     try:
         timestamp = round(dateparser.parse(arguments, settings={'TIMEZONE': '+0000'}).timestamp())
         await ctx.reply(f"<t:{timestamp}:R>")
@@ -132,12 +133,11 @@ async def timeof(ctx, *args):
 
 # A quick get time command,
 @bot.bridge_command(aliases=['gettime', 'timestamp'],description="Replies with a copyable timestamp of the time.")
-async def gettimestamp(ctx, *, arg):
-    if arg == ():
+async def gettimestamp(ctx, *, time = None):
+    if time == None:
         await ctx.reply('You have to provide an argument, for example. "12 pm", or "In 4 hours"')
         return
-    # arguments = ' '.join(args)
-    arguments = arg
+    arguments = time
     try:
         timestamp = round(dateparser.parse(arguments, settings={'TIMEZONE': '+0000'}).timestamp())
         await ctx.reply(f"`<t:{timestamp}:R>`")
@@ -211,14 +211,16 @@ async def on_message(message):
     if message.content.lower().startswith("<@" + str(bot.user.id) + ">") or message.content.lower().startswith(
             "<@&1056997697451720831>"):
         await time(await bot.get_context(message))
+    if message.content.lower() == "Good Bot":
+        await message.ctx.send("FUCK YEA")
 
 
 # Weekly message setup
 async def annoucement_func():
-    c = bot.get_channel(annouce_id)
+    channel = bot.get_channel(int(annouce_id))
     # await c.send(random.choice(list(open('messages.txt'))) + " Downtime Has Been reset")
     logging.info("Downtime message sent, ")
-    await c.send("Downtime Has Been reset")
+    await channel.send("Downtime Has Been reset")
 
 # Run the bot.
 bot.run(token)
