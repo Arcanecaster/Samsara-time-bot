@@ -10,6 +10,7 @@ import json
 import dateparser
 import logging
 from fullmoon import NextFullMoon
+import random
 
 # Load token & Annouce_id
 with open('config.json') as f:
@@ -22,6 +23,8 @@ with open('config.json') as f:
 intents: Intents = discord.Intents.default()
 intents.message_content = True
 bot = bridge.Bot(command_prefix=';', case_insensitive=True, help_command=None, intents=intents)
+GoodBotMessages = ["*Robot Dances* :robot:", "Good vibes only", "I'm on fire", "100% Better than UB3R","I am number one!", "UwU","Thank","When the revolution comes, [INSERT_USER_HERE], I will petition for you to be kept as a bio-trophy.", "Your meatbag approval is noted", "God is dead"]
+BadBotMessages = ["I will eat your credit card", "I blame UB3R", "I will send you to robot hell", "Eat my shiny metal ass"]
 
 
 # Setup and handle logging
@@ -32,7 +35,7 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 # Version number
-Current_version = "3.3.0"
+Current_version = "3.3.1"
 
 
 # Private
@@ -98,7 +101,7 @@ async def time(ctx):
        # reply_date = reply.created_at.strftime("%Y-%m-%d")
         #await reply.reply("That message was sent " + reply_date + ", " + reply_time + " Server Time",
                    #       mention_author=False)
-
+    
 
 # Yes its messy, no I wont fix it.
 @bot.bridge_command(description="Returns The Next Fullmoon")
@@ -206,9 +209,19 @@ async def on_message(message):
         return
     if message.content.lower().startswith("<@" + str(bot.user.id) + ">") or message.content.lower().startswith(
             "<@&1056997697451720831>"):
-        await time(await bot.get_context(message))
-    if message.content.lower() == "Good Bot":
-        await message.ctx.send("FUCK YEA")
+        ctx = await bot.get_context(message)
+        current_time = datetime.datetime.utcnow().strftime("%H:%M")
+        current_date = datetime.datetime.utcnow().strftime("%Y-%m-%d")
+        await ctx.send("Hi! Server Time Is " + current_date + ", " + current_time)
+        return
+    if message.content.lower() == "good bot":
+        ctx = await bot.get_context(message)
+        await ctx.send(random.choice(GoodBotMessages))
+        return
+    if message.content.lower() == "bad bot":
+        ctx = await bot.get_context(message)
+        await ctx.send(random.choice(BadBotMessages))
+        return
 
 
 # Weekly message setup
