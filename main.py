@@ -72,7 +72,7 @@ async def on_ready():
 
     # Setup weekly message
     scheduler = AsyncIOScheduler(timezone="UTC")
-    scheduler.add_job(annoucement_func, CronTrigger(day_of_week=0, hour=20))
+    scheduler.add_job(annoucement_func, CronTrigger.from_crontab("0 12 * * MON"))
     # Do on ready events
     print(f'We have logged in as {bot.user}')
     await bot.wait_until_ready()
@@ -189,6 +189,9 @@ async def credit(ctx):
         'finally the wonderful devs that helped make Dateparser making the existence of the ;timeof command possible'
         ' https://github.com/scrapinghub/dateparser/graphs/contributors')
 
+@bot.bridge_command(description="Dont use, for test use only!")
+async def annoucementtest(ctx):
+    await annoucement_func()
 
 # Emergency logout command, only available for me.
 @bot.bridge_command(description="Emergency tool to log out the bot, only useable by Arcane")
@@ -227,9 +230,9 @@ async def on_message(message):
 # Weekly message setup
 async def annoucement_func():
     channel = bot.get_channel(int(annouce_id))
-    # await c.send(random.choice(list(open('messages.txt'))) + " Downtime Has Been reset")
+    await channel.send(random.choice(list(open('messages.txt'))) + "Downtime Has Been reset")
     logging.info("Downtime message sent, ")
-    await channel.send("Downtime Has Been reset")
+    # await channel.send("Downtime Has Been reset")
 
 # Run the bot.
 bot.run(token)
