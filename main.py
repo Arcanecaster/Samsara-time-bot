@@ -11,7 +11,7 @@ import dateparser
 import logging
 from fullmoon import NextFullMoon
 import random
-import heapq
+import traveltimelib as TravelTime
 # Load token & Annouce_id
 with open('config.json') as f:
     data = json.load(f)
@@ -35,57 +35,7 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 # Version number
-Current_version = "3.3.1"
-
-def dijkstra(graph, start, end):
-    distances = {node: float('inf') for node in graph}
-    distances[start] = 0
-    queue = [(0, start)]
-    previous_nodes = {node: None for node in graph}
-    while queue:
-        (current_distance, current_node) = heapq.heappop(queue)
-        if current_node == end:
-            path = []
-            while current_node is not None:
-                path.append(current_node)
-                current_node = previous_nodes[current_node]
-            path.reverse()
-            return (distances[end], path)
-        if current_distance > distances[current_node]:
-            continue
-        for neighbor, weight in graph[current_node].items():
-            distance = current_distance + weight
-            if distance < distances[neighbor]:
-                distances[neighbor] = distance
-                previous_nodes[neighbor] = current_node
-                heapq.heappush(queue, (distance, neighbor))
-    return (-1, []) # no path found
-graph = {
-    'Bachtalan': {'Orcish Legions': 6, 'Kobold Tribes': 6, 'Femursnap Tribes': 5, 'Srath': 3},
-    'Cortashar Dominion': {'Sinios': 12, 'Farleaf': 10, 'Thrusk': 4, 'Redhorn Hordes': 2},
-    'Dirk': {'Srath': 4, 'Meloz Tribe': 3},
-    'Srath': {'Farwing Tribes': 20, 'Tiamats Eye': 10, 'Femursnap Tribes': 5, 'Kobold Tribes': 5, 'Meloz Tribe': 4, 'Dirk': 4, 'Bachtalan': 3},
-    'Farleaf': {'Sinios': 12, 'Cortashar Dominion': 10, 'Vurn Darul': 10},
-    'Farwing Tribes': {'Srath': 20, 'Kobold Tribes': 15, 'Skarlian Holy State': 12, 'Tiamats Eye': 3},
-    'Femursnap Tribes': {'Thrusk': 13, 'Lunan': 7, 'Srath': 5, 'Orcish Legions': 5, 'Bachtalan': 5, 'Meloz Tribe': 2},
-    'Kingdom of Evercia': {'Silver Peninsula': 5, 'Skarlian Holy State': 1},
-    'Kingdom of Gundahn': {'Vurn Darul': 7, 'Sinios': 6, 'Venuvia': 5, 'Thornian Council': 4},
-    'Kobold Tribes': {'Farwing Tribes': 15, 'Orcish Legions': 10, 'Bachtalan': 6, 'Srath': 5, 'Tiamats Eye': 3, 'Skarlian Holy State': 3},
-    'Lunan': {'Meloz Tribe': 9, 'Femursnap Tribes': 7, 'Orcish Legions': 6, 'Thrusk': 5, 'Redhorn Hordes': 5},
-    'Orcish Legions': {'Sinios': 12, 'Samsara': 11, 'Kobold Tribes': 10, 'Skarlian Holy State': 10, 'Redhorn Hordes': 9, 'Bachtalan': 6, 'Lunan': 6, 'Femursnap Tribes': 5},
-    'Meloz Tribe': {'Thrusk': 15, 'Lunan': 9, 'Srath': 4, 'Dirk': 3, 'Femursnap Tribes': 2},
-    'Redhorn Hordes': {'Orcish Legions': 9, 'Sinios': 8, 'Thrusk': 3, 'Cortashar Dominion': 2},
-    'Rustvault': {'Venuvia': 8, 'Silver Peninsula': 7},
-    'Samsara': {'Orcish Legions': 11, 'Sinios': 11, 'Thornian Council': 2},
-    'Skarlian Holy State': {'Farwing Tribes': 12, 'Orcish Legions': 10, 'Tiamats Eye': 10, 'Kobold Tribes': 3, 'Kingdom of Evercia': 1},
-    'Silver Peninsula': {'Rustvault': 7,'Kingdom of Evercia': 5},
-    'Thornian Council': {'Sinios': 6,'Venuvia': 5,'Kingdom of Gundahn': 4,'Samsara': 2},'Thrusk': {'Meloz Tribe': 15,'Femursnap Tribes': 13,'Lunan': 5,'Cortashar Dominion': 4,'Redhorn Hordes': 3},
-    'Tiamats Eye': {'Srath': 10,'Skarlian Holy State': 10,'Kobold Tribes': 3,'Farwing Tribes': 3},
-    'Sinios': {'Orcish Legions': 12,'Cortashar Dominion': 12,'Farleaf': 12,'Samsara': 11,'Redhorn Hordes': 8,'Thornian Council': 6,'Vurn Darul': 4},
-    'Venuvia': {'Rustvault': 8,'Thornian Council': 5,'Kingdom of Gundahn': 5},
-    'Vurn Darul': {'Farleaf': 10,'Kingdom of Gundahn': 7,'Sinios': 4}
-}
-region_names = list(graph.keys())
+Current_version = "3.4.1"
 
 # Private
 @bot.message_command(name="Get Time(Private)")
@@ -150,25 +100,39 @@ async def time(ctx):
        # reply_date = reply.created_at.strftime("%Y-%m-%d")
         #await reply.reply("That message was sent " + reply_date + ", " + reply_time + " Server Time",
                    #       mention_author=False)
-    
-@bot.bridge_command()
-async def travel_time(ctx, start: str, end: str):
-    (travel_time, path) = dijkstra(graph, start, end)
-    if travel_time == float('inf'):
-        await ctx.send("No path found.")
+
+@bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="When inputted with two regions, replies with the shortest route and the travel time in between the regions")
+async def traveltime(ctx, start: str, end: str):
+    valdstart = TravelTime.validate_input(start)
+    valdend = TravelTime.validate_input(end)
+    if valdend == None:
+        await ctx.reply("Sorry, but I cant seem to find " + end + " Please try again")
+        return
+    if valdstart == None:
+        await ctx.reply("Sorry, but I cant seem to find " + start + " Please try again")
+        return
+    try:
+        (travel_time, path) = TravelTime.dijkstra(TravelTime.graph, valdstart, valdend)
+    except KeyError:
+        await ctx.reply("Cant find the region you're looking for")
+        return
+    if travel_time == float('inf') or travel_time == float(-1):
+        if valdend == "Aceria":
+            await ctx.reply("I'm sorry, there is no nation or town on the maps by the name of Aceria")
+            return
+        await ctx.reply("No path found.")
     else:
-        response = f"Travel time between {start} and {end} is {travel_time} units.\n"
+        response = f"Travel time between {valdstart} and {valdend} is {travel_time} days.\n"
         response += "Path: "
         total_time = 0
         for i in range(len(path)):
             if i == 0:
                 response += f"{path[i]}"
             else:
-                distance = graph[path[i-1]][path[i]]
+                distance = TravelTime.graph[path[i-1]][path[i]]
                 total_time += distance
                 response += f" ({distance} days) -> {path[i]}"
-        response += f"\nTotal travel time: {total_time} days"
-        await ctx.send(response)
+        await ctx.reply(response)
 
 # Yes its messy, no I wont fix it.
 @bot.bridge_command(description="Returns The Next Fullmoon")
