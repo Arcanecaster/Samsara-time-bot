@@ -106,7 +106,7 @@ async def time(ctx):
 @bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="Replies with the shortest route and the travel time in between the regions")
 async def traveltime(ctx, start: str = None, end: str = None):
     if end == None and start == None:
-        await ctx.reply("Choose two regions!", view=MyView())
+        await ctx.reply("Choose two regions!", view=MyView(timeout=30))
         return
     await ctx.reply(await get_travel_time(start, end))
 
@@ -141,6 +141,11 @@ async def get_travel_time(start: str, end: str):
                 response += f" ({distance} days) -> {path[i]}"
         return response
 class MyView(discord.ui.View):
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        await self.message.edit(content="You took too long! Disabled all the components.", view=self)
+    
     @discord.ui.select( # the decorator that lets you specify the properties of the select menu
         placeholder = "Choose two regions!", # the placeholder text that will be displayed if nothing is selected
         min_values = 2, # the minimum number of values that must be selected by the users
