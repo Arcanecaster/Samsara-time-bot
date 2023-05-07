@@ -101,8 +101,14 @@ async def time(ctx):
         #await reply.reply("That message was sent " + reply_date + ", " + reply_time + " Server Time",
                    #       mention_author=False)
 
-@bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="When inputted with two regions, replies with the shortest route and the travel time in between the regions")
-async def traveltime(ctx, start: str, end: str):
+@bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="Replies with the shortest route and the travel time in between the regions")
+async def traveltime(ctx, start: str = None, end: str = None):
+    if end == None and start == None:
+        await ctx.reply('You need to provide 2 regions to travel between, for example !traveltime Samsara "Tiamats Eye"')
+        return
+    if start == None or end == None:
+        await ctx.reply("Sorry, but you need to provide an end and a start")
+        return
     valdstart = TravelTime.validate_input(start)
     valdend = TravelTime.validate_input(end)
     if valdend == None:
@@ -111,11 +117,8 @@ async def traveltime(ctx, start: str, end: str):
     if valdstart == None:
         await ctx.reply("Sorry, but I cant seem to find " + start + " Please try again")
         return
-    try:
-        (travel_time, path) = TravelTime.dijkstra(TravelTime.graph, valdstart, valdend)
-    except KeyError:
-        await ctx.reply("Cant find the region you're looking for")
-        return
+    
+    (travel_time, path) = TravelTime.dijkstra(TravelTime.graph, valdstart, valdend)
     if travel_time == float('inf') or travel_time == float(-1):
         if valdend == "Aceria":
             await ctx.reply("I'm sorry, there is no nation or town on the maps by the name of Aceria")
@@ -190,7 +193,7 @@ async def helps(ctx):
     embedvar.add_field(name=";timestamp", value="Returns the argument as copy-able timestamp, fx ´;timestamp "
                                                 "in 5 hours`")
     embedvar.add_field(name=";fullmoon", value="Shows the next fullmoon")
-
+    embedvar.add_field(name=";traveltime", value="Replies with the travel tiem between two regions")
     await ctx.reply(embed=embedvar)
 
 
