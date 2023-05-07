@@ -101,29 +101,33 @@ async def time(ctx):
         #await reply.reply("That message was sent " + reply_date + ", " + reply_time + " Server Time",
                    #       mention_author=False)
 
+
+
 @bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="Replies with the shortest route and the travel time in between the regions")
 async def traveltime(ctx, start: str = None, end: str = None):
     if end == None and start == None:
-        await ctx.reply('You need to provide 2 regions to travel between, for example !traveltime Samsara "Tiamats Eye"')
+        await ctx.reply("Choose two regions!", view=MyView())
         return
+    await ctx.reply(await get_travel_time(start, end))
+
+
+async def get_travel_time(start: str, end: str):
+    if end == None and start == None:
+        return 'You need to provide 2 regions to travel between, for example !traveltime Samsara "Tiamats Eye"'
     if start == None or end == None:
-        await ctx.reply("Sorry, but you need to provide an end and a start")
-        return
+        return "Sorry, but you need to provide an end and a start. Or nothing at all to use the dropdown"
     valdstart = TravelTime.validate_input(start)
     valdend = TravelTime.validate_input(end)
     if valdend == None:
-        await ctx.reply("Sorry, but I cant seem to find " + end + " Please try again")
-        return
+        return "Sorry, but I cant seem to find " + end + " Please try again"
     if valdstart == None:
-        await ctx.reply("Sorry, but I cant seem to find " + start + " Please try again")
-        return
-    
+        return "Sorry, but I cant seem to find " + start + " Please try again"
+
     (travel_time, path) = TravelTime.dijkstra(TravelTime.graph, valdstart, valdend)
     if travel_time == float('inf') or travel_time == float(-1):
         if valdend == "Aceria":
-            await ctx.reply("I'm sorry, there is no nation or town on the maps by the name of Aceria")
-            return
-        await ctx.reply("No path found.")
+            return "I'm sorry, there is no nation or town on the maps by the name of Aceria"
+        return "No path found."
     else:
         response = f"Travel time between {valdstart} and {valdend} is {travel_time} days.\n"
         response += "Path: "
@@ -135,7 +139,119 @@ async def traveltime(ctx, start: str = None, end: str = None):
                 distance = TravelTime.graph[path[i-1]][path[i]]
                 total_time += distance
                 response += f" ({distance} days) -> {path[i]}"
-        await ctx.reply(response)
+        return response
+class MyView(discord.ui.View):
+    @discord.ui.select( # the decorator that lets you specify the properties of the select menu
+        placeholder = "Choose two regions!", # the placeholder text that will be displayed if nothing is selected
+        min_values = 2, # the minimum number of values that must be selected by the users
+        max_values = 2, # the maximum number of values that can be selected by the users
+        options = [ # the list of options from which users can choose, a required field
+                discord.SelectOption(
+                    label="Bachtalan",
+                    description="Select Bachtalan?"
+                ),
+                discord.SelectOption(
+                    label="Blue Coast Bay",
+                    description="Select Blue Coast Bay?"
+                ),
+                discord.SelectOption(
+                    label="Cortashar Dominion",
+                    description="Select Cortashar Dominion?"
+                ),
+                discord.SelectOption(
+                    label="Dirk",
+                    description="Select Dirk?"
+                ),
+                discord.SelectOption(
+                    label="Farleaf",
+                    description="Select Farleaf?"
+                ),
+                discord.SelectOption(
+                    label="Farwing Tribes",
+                    description="Select Farwing Tribes?"
+                ),
+                discord.SelectOption(
+                    label="Femursnap Tribes",
+                    description="Select Femursnap Tribes?"
+                ),
+                discord.SelectOption(
+                    label="Kingdom of Evercia",
+                    description="Select Kingdom of Evercia?"
+                ),
+                discord.SelectOption(
+                    label="Kingdom of Gundahn",
+                    description="Select Kingdom of Gundahn?"
+                ),
+                discord.SelectOption(
+                    label="Kobold Tribes",
+                    description="Select Kobold Tribes?"
+                ),
+                discord.SelectOption(
+                    label="Lunan",
+                    description="Select Lunan?"
+                ),
+                discord.SelectOption(
+                    label="Meloz Tribe",
+                    description="Select Meloz Tribe?"
+                ),
+                discord.SelectOption(
+                    label="Orcish Legions",
+                    description="Select Orcish Legions?"
+                ),
+                discord.SelectOption(
+                    label="Redhorn Hordes",
+                    description="Select Redhorn Hordes?"
+                ),
+                discord.SelectOption(
+                    label="Rustvault",
+                    description="Select Rustvault?"
+                ),
+                discord.SelectOption(
+                    label="Samsara",
+                    description="Select Samsara?"
+                ),
+                discord.SelectOption(
+                    label="Skarlian Holy State",
+                    description="Select Skarlian Holy State?"
+                ),
+                discord.SelectOption(
+                    label="The Silver Peninsula",
+                    description="Select The Silver Peninsula?"
+                ),
+                discord.SelectOption(
+                    label="Thornian Council",
+                    description="Select Thornian Council?"
+                ),
+                discord.SelectOption(
+                    label="Thrusk",
+                    description="Select Thrusk?"
+                ),
+                discord.SelectOption(
+                    label="Tiamats Eye",
+                    description="Select Tiamats Eye?"
+                ),
+                discord.SelectOption(
+                    label="Sinios",
+                    description="Select United Hordes of Sinios?"
+                ),
+                discord.SelectOption(
+                    label="Venuvia",
+                    description="Select Venuvia?"
+                ),
+                discord.SelectOption(
+                    label="Vurn Darul",
+                    description="Select Vurn Darul?"
+                ),
+                discord.SelectOption(
+                label="Aceria",
+                    description="Select Aceria?"
+                )
+        ]
+    )
+    async def select_callback(self, select, interaction): # the function called when the user is done selecting options
+        select.disabled = True
+        await interaction.response.edit_message(view=self, content=await get_travel_time(f"{select.values[0]}", f"{select.values[1]}"))
+        
 
 # Yes its messy, no I wont fix it.
 @bot.bridge_command(description="Returns The Next Fullmoon")
