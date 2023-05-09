@@ -156,10 +156,6 @@ class MyView(discord.ui.View):
                     description="Select Bachtalan?"
                 ),
                 discord.SelectOption(
-                    label="Blue Coast Bay",
-                    description="Select Blue Coast Bay?"
-                ),
-                discord.SelectOption(
                     label="Cortashar Dominion",
                     description="Select Cortashar Dominion?"
                 ),
