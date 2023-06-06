@@ -33,7 +33,7 @@ regions = {
 'Rustvault': ['rustvault', 'rv', 'vault'],
 'Samsara': ['samsara', 'sam'],
 'Skarlian Holy State': ['skarlian holy state', 'skarlian', 'shs', 'skarlia'],
-'The Silver Peninsula': ['the silver peninsula', 'silver peninsula', 'tsp', 'silver', 'peninsula'],
+'Silver Peninsula': ['the silver peninsula', 'silver peninsula', 'tsp', 'silver', 'peninsula'],
 'Thornian Council': ['thornian council', 'thornian', 'tc', 'thornia', 'thorn'],
 'Thrusk': ['thrusk', 'tr'],
 'Tiamats Eye': ['tiamats eye', 'tiamat', 'te', 'eye'],
