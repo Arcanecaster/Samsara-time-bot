@@ -101,17 +101,22 @@ async def time(ctx):
         #await reply.reply("That message was sent " + reply_date + ", " + reply_time + " Server Time",
                    #       mention_author=False)
 
-
+@bot.bridge_command(aliases=['dtt','dt_travel'], description="Replies with the shortest route and the travel time in between the regions in miles")
+async def dttravel(ctx, start: str = None, end: str = None):
+    if end == None and start == None:
+        await ctx.reply("Choose two regions!", view=Milesview(timeout=30))
+        return
+    await ctx.reply(await get_travel_time(start, end, TravelTime.Milesgraph, "miles"))
 
 @bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="Replies with the shortest route and the travel time in between the regions")
 async def traveltime(ctx, start: str = None, end: str = None):
     if end == None and start == None:
-        await ctx.reply("Choose two regions!", view=MyView(timeout=30))
+        await ctx.reply("Choose two regions!", view=Timeview(timeout=30))
         return
-    await ctx.reply(await get_travel_time(start, end))
+    await ctx.reply(await get_travel_time(start, end, TravelTime.Timegraph, "days"))
 
 
-async def get_travel_time(start: str, end: str):
+async def get_travel_time(start: str, end: str, graph: str, units: str):
     if end == None and start == None:
         return 'You need to provide 2 regions to travel between, for example !traveltime EverFjord "Tiamats Eye"'
     if start == None or end == None:
@@ -123,24 +128,24 @@ async def get_travel_time(start: str, end: str):
     if valdstart == None:
         return "Sorry, but I cant seem to find " + start + " Please try again"
 
-    (travel_time, path) = TravelTime.dijkstra(TravelTime.graph, valdstart, valdend)
+    (travel_time, path) = TravelTime.dijkstra(graph, valdstart, valdend)
     if travel_time == float('inf') or travel_time == float(-1):
         if valdend == "Aceria":
             return "I'm sorry, there is no nation or town on the maps by the name of Aceria"
         return "No path found."
     else:
-        response = f"Travel time between {valdstart} and {valdend} is {travel_time} days.\n"
+        response = f"Travel {units} between {valdstart} and {valdend} is {travel_time} {units}.\n"
         response += "Path: "
         total_time = 0
         for i in range(len(path)):
             if i == 0:
                 response += f"{path[i]}"
             else:
-                distance = TravelTime.graph[path[i-1]][path[i]]
+                distance = graph[path[i-1]][path[i]]
                 total_time += distance
-                response += f" ({distance} days) -> {path[i]}"
+                response += f" ({distance} {units}) -> {path[i]}"
         return response
-class MyView(discord.ui.View):
+class Timeview(discord.ui.View):
     async def on_timeout(self):
         for child in self.children:
             child.disabled = True
@@ -155,7 +160,24 @@ class MyView(discord.ui.View):
     )
     async def select_callback(self, select, interaction): # the function called when the user is done selecting options
         select.disabled = True
-        await interaction.response.edit_message(view=self, content=await get_travel_time(f"{select.values[0]}", f"{select.values[1]}"))
+        await interaction.response.edit_message(view=self, content=await get_travel_time(f"{select.values[0]}", f"{select.values[1]}", TravelTime.Timegraph, "days"))
+
+class Milesview(discord.ui.View):
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        await self.message.edit(content="You took too long! Disabled all the components.", view=self)
+    
+    @discord.ui.select( # the decorator that lets you specify the properties of the select menu
+        placeholder = "Choose two regions!", # the placeholder text that will be displayed if nothing is selected
+        min_values = 2, # the minimum number of values that must be selected by the users
+        max_values = 2, # the maximum number of values that can be selected by the users
+        options = [discord.SelectOption(label=Region, value=Region, description=f"Select {Region}?") for Region in TravelTime.regions]
+
+    )
+    async def select_callback(self, select, interaction): # the function called when the user is done selecting options
+        select.disabled = True
+        await interaction.response.edit_message(view=self, content=await get_travel_time(f"{select.values[0]}", f"{select.values[1]}", TravelTime.Milesgraph, "miles"))
         
 
 # Yes its messy, no I wont fix it.
