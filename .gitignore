@@ -5,3 +5,4 @@
 .idea
 value.txt
 .gitignore
+__pycache__/traveltimelib.cpython-311.pyc
