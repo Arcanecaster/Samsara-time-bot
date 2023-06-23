@@ -101,19 +101,12 @@ async def time(ctx):
         #await reply.reply("That message was sent " + reply_date + ", " + reply_time + " Server Time",
                    #       mention_author=False)
 
-@bot.bridge_command(aliases=['dtt','dt_travel'], description="Replies with the shortest route and the travel time in between the regions in miles")
-async def dttravel(ctx, start: str = None, end: str = None):
+@bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="Replies with the shortest route and the travel time in between the regions")
+async def dttravel(ctx, start: discord.Option(str, autocomplete=region_searcher)=None, end: discord.Option(str, autocomplete=region_searcher)=None):
     if end == None and start == None:
         await ctx.reply("Choose two regions!", view=Milesview(timeout=30))
         return
     await ctx.reply(await get_travel_time(start, end, TravelTime.Milesgraph, "miles"))
-
-@bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="Replies with the shortest route and the travel time in between the regions")
-async def traveltime(ctx, start: str = None, end: str = None):
-    if end == None and start == None:
-        await ctx.reply("Choose two regions!", view=Timeview(timeout=30))
-        return
-    await ctx.reply(await get_travel_time(start, end, TravelTime.Timegraph, "days"))
 
 
 async def get_travel_time(start: str, end: str, graph: str, units: str):
