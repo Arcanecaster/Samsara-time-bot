@@ -85,6 +85,10 @@ async def ping(ctx):
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
     print("Current Time =", current_time)
 
+async def region_searcher(ctx: discord.AutocompleteContext):
+    return [
+        region for region in TravelTime.regions
+    ]
 
 # Time command
 @bot.bridge_command(aliases=['timer', 'times', 'servertime', 'servtime', 'stime'], description="Replies with the current server timeReplies with the current server time")
@@ -101,12 +105,21 @@ async def time(ctx):
         #await reply.reply("That message was sent " + reply_date + ", " + reply_time + " Server Time",
                    #       mention_author=False)
 
-@bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="Replies with the shortest route and the travel time in between the regions")
-async def dttravel(ctx, start: discord.Option(str, autocomplete=region_searcher)=None, end: discord.Option(str, autocomplete=region_searcher)=None):
+@bot.bridge_command(aliases=['dtt','dt_travel'], description="Replies with the shortest route and the travel time in between the regions in miles")
+async def dttravel(ctx, start: discord.Option(str, choices=[region for region in TravelTime.regions])=None, end: discord.Option(str, choices=[region for region in TravelTime.regions])=None):
     if end == None and start == None:
         await ctx.reply("Choose two regions!", view=Milesview(timeout=30))
         return
     await ctx.reply(await get_travel_time(start, end, TravelTime.Milesgraph, "miles"))
+    return
+    
+@bot.bridge_command(aliases=['tt','travel_time', 'travel'], description="Replies with the shortest route and the travel time in between the regions")
+async def traveltime(ctx, start: discord.Option(str, choices=[region for region in TravelTime.regions]), end: discord.Option(str, choices=[region for region in TravelTime.regions])):
+    if end == None and start == None:
+        await ctx.reply("Choose two regions!", view=Timeview(timeout=30))
+        return
+    await ctx.reply(await get_travel_time(start, end, TravelTime.Timegraph, "days"))
+    return
 
 
 async def get_travel_time(start: str, end: str, graph: str, units: str):
@@ -155,10 +168,15 @@ class Timeview(discord.ui.View):
         select.disabled = True
         await interaction.response.edit_message(view=self, content=await get_travel_time(f"{select.values[0]}", f"{select.values[1]}", TravelTime.Timegraph, "days"))
 
+
+
 class Milesview(discord.ui.View):
     async def on_timeout(self):
         for child in self.children:
-            child.disabled = True
+            if child.disabled == False:
+                child.disabled = True
+            else:
+                return
         await self.message.edit(content="You took too long! Disabled all the components.", view=self)
     
     @discord.ui.select( # the decorator that lets you specify the properties of the select menu
