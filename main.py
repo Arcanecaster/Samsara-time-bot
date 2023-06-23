@@ -119,7 +119,6 @@ async def traveltime(ctx, start: discord.Option(str, choices=[region for region 
         await ctx.reply("Choose two regions!", view=Timeview(timeout=30))
         return
     await ctx.reply(await get_travel_time(start, end, TravelTime.Timegraph, "days"))
-    return
 
 
 async def get_travel_time(start: str, end: str, graph: str, units: str):
