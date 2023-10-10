@@ -149,7 +149,6 @@ class Timeview(discord.ui.View):
     async def on_timeout(self):
         for child in self.children:
             child.disabled = True
-        await self.message.edit(content="You took too long! Disabled all the components.", view=self)
     
     @discord.ui.select( # the decorator that lets you specify the properties of the select menu
         placeholder = "Choose two regions!", # the placeholder text that will be displayed if nothing is selected
@@ -166,7 +165,6 @@ class Milesview(discord.ui.View):
     async def on_timeout(self):
         for child in self.children:
             child.disabled = True
-        await self.message.edit(content="You took too long! Disabled all the components.", view=self)
     
     @discord.ui.select( # the decorator that lets you specify the properties of the select menu
         placeholder = "Choose two regions!", # the placeholder text that will be displayed if nothing is selected
