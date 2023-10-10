@@ -9,9 +9,9 @@ import datetime
 import json
 import dateparser
 import logging
-from fullmoon import NextFullMoon
 import random
 import traveltimelib as TravelTime
+import ephem
 # Load token & Annouce_id
 with open('config.json') as f:
     data = json.load(f)
@@ -190,19 +190,31 @@ class Milesview(discord.ui.View):
         await interaction.response.edit_message(view=self, content=await get_travel_time(f"{select.values[0]}", f"{select.values[1]}", TravelTime.Milesgraph, "miles"))
         
 
-# Yes its messy, no I wont fix it.
 @bot.bridge_command(description="Returns The Next Fullmoon")
 async def fullmoon(ctx):
-    n = NextFullMoon()
-    next_moon = n.reset().next_full_moon().date()
-    after = next_moon + datetime.timedelta(days=1)
-    if next_moon == datetime.datetime.today().date() or after == datetime.datetime.today().date():
-        nextnext_moon = n.next_full_moon().date()
-        nextafter = nextnext_moon + datetime.timedelta(days=1)
-        await ctx.reply(
-            f"Today the night between {next_moon} and {after}! Beware the howl of the Lycan! :wolf:And after that the next fullmoon will be between {str(nextnext_moon)} and {str(nextafter)}")
-    else:
-        await ctx.reply(f":wolf: The next fullmoon will be the night between {str(next_moon)} and {after}")
+    currentDate = datetime.datetime.now()
+    next_full_moon =  ephem.next_full_moon(currentDate).datetime()
+    prev_full_moon = ephem.previous_full_moon(currentDate).datetime()
+    nextnext_full_moon =  ephem.next_full_moon(next_full_moon + datetime.timedelta(days=1)).datetime()
+    embed=discord.Embed(title=":full_moon:Fullmoon:full_moon:")
+    embed.add_field(name="Last Fullmoon", value=prev_full_moon.strftime('%A the %d of %B. %m/%d/%Y'), inline=True)
+    embed.add_field(name="Next Fullmoon", value=next_full_moon.strftime('%A the %d of %B. %m/%d/%Y'), inline=True)
+    embed.add_field(name="Next Next Fullmoon", value=nextnext_full_moon.strftime('%A the %d of %B. %m/%d/%Y'), inline=True)
+    await ctx.reply(embed=embed)
+
+# Yes its messy, no I wont fix it.
+#@bot.bridge_command(description="Returns The Next Fullmoon")
+#async def fullmoon(ctx):
+#    n = NextFullMoon()
+#    next_moon = n.reset().next_full_moon().date()
+#    after = next_moon + datetime.timedelta(days=1)
+#    if next_moon == datetime.datetime.today().date() or after == datetime.datetime.today().date():
+#        nextnext_moon = n.next_full_moon().date()
+#        nextafter = nextnext_moon + datetime.timedelta(days=1)
+#        await ctx.reply(
+#            f"Today the night between {next_moon} and {after}! Beware the howl of the Lycan! :wolf:And after that the next fullmoon will be between {str(nextnext_moon)} and {str(nextafter)}")
+#    else:
+#        await ctx.reply(f":wolf: The next fullmoon will be the night between {str(next_moon)} and {after}")
 
 
 @bot.bridge_command(aliases=['when', 'tstamp'],description="Replies with a timestamp of the time")
