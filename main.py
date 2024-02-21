@@ -315,7 +315,7 @@ async def on_message(message):
         ctx = await bot.get_context(message)
         current_time = datetime.datetime.utcnow().strftime("%H:%M")
         current_date = datetime.datetime.utcnow().strftime("%Y-%m-%d")
-        await ctx.send(f"Hi! Server Time is {current_date} , {current_time}, in the year {get_year()} ATSF")
+        await ctx.send(f"Hi! Server Time is {current_date} , {current_time}, in the year {get_year()} After the Star Fall(ASTF)")
         return
     if message.content.lower() == "good bot":
         ctx = await bot.get_context(message)
