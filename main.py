@@ -302,7 +302,8 @@ async def logout(ctx):
         await ctx.reply("Lol still no, love you :heart:")
     else:
         await ctx.reply("lol no ")
-
+def get_year():
+    return datetime.datetime.today().year - 1621
 
 # Check for bot ping
 @bot.listen('on_message')
@@ -314,7 +315,7 @@ async def on_message(message):
         ctx = await bot.get_context(message)
         current_time = datetime.datetime.utcnow().strftime("%H:%M")
         current_date = datetime.datetime.utcnow().strftime("%Y-%m-%d")
-        await ctx.send("Hi! Server Time Is " + current_date + ", " + current_time)
+        await ctx.send(f"Hi! Server Time is {current_date} , {current_time}, in the year {get_year()} ATSF")
         return
     if message.content.lower() == "good bot":
         ctx = await bot.get_context(message)
